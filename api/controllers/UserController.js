@@ -3,13 +3,31 @@ const UserDAO = require("../dao/UserDAO");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Create a UserController class that extends the GlobalController sending the UserDAO to the parent constructor
+/**
+ * UserController
+ *
+ * Handles user-specific logic such as registration, login, and password validation for the Taskly backend.
+ * Extends GlobalController to inherit generic CRUD operations, but overrides and adds methods for user management.
+ *
+ * @class UserController
+ * @extends GlobalController
+ */
 class UserController extends GlobalController {
   constructor() {
     super(UserDAO);
   }
 
   // Override the create method to add custom logic for user creation
+  /**
+   * Creates a new user with validation and password hashing.
+   * Checks for password match, email uniqueness, and hashes the password before saving.
+   *
+   * @async
+   * @override
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>}
+   */
   async create(req, res) {
     try {
       // Validate password and confirmPassword match
@@ -40,6 +58,13 @@ class UserController extends GlobalController {
   }
 
   // Additional validation for password
+  /**
+   * Validates the password and confirmPassword fields in the request.
+   * Ensures they match and meet complexity requirements.
+   *
+   * @param {Object} req - Express request object
+   * @returns {string|null} Error message if invalid, otherwise null
+   */
   passwordValidation(req) {
     if (req.body.password != req.body.confirmPassword) {
       return "Password and confirm password don't match";
@@ -58,12 +83,28 @@ class UserController extends GlobalController {
   }
 
   // Hash the password before saving using bcrypt
+  /**
+   * Hashes the password in the request body using bcrypt before saving.
+   *
+   * @async
+   * @param {Object} req - Express request object
+   * @returns {Promise<void>}
+   */
   async hashPassword(req) {
     const newPassword = await bcrypt.hash(req.body.password, 10);
     req.body.password = newPassword;
     return;
   }
 
+  /**
+   * Authenticates a user by email and password.
+   * Checks credentials and returns a success message and user ID if valid.
+   *
+   * @async
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @returns {Promise<number|void>} Returns 0 on success, otherwise sends error response
+   */
   async login(req, res) {
     try {
       const user = await UserDAO.readByEmail(req.body.email);

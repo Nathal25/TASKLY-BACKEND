@@ -1,13 +1,28 @@
 const User = require('../models/User');
 const GlobalDAO = require('./GlobalDao');
 
-// Create a UserDAO class that extends the GlobalDAO sending the User model to the parent constructor
+/**
+ * UserDAO
+ *
+ * Data Access Object for user-specific operations, extending GlobalDAO for generic CRUD.
+ * Provides additional methods for user lookup by email.
+ *
+ * @class UserDAO
+ * @extends GlobalDAO
+ */
 class UserDAO extends GlobalDAO {
     constructor() {
         super(User);
     }
 
-    // Create a method to find a user by email
+    /**
+     * Finds a user document by email address.
+     *
+     * @async
+     * @param {string} emailToSearch - The email address to search for
+     * @returns {Promise<Object|null>} The found user document or null if not found
+     * @throws {Error} If retrieval fails
+     */
     async readByEmail(emailToSearch) {
         try {
             const document = await User.findOne({email: emailToSearch});
