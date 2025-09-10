@@ -6,7 +6,7 @@ const TaskDAO = require("../dao/TaskDAO");
  * It extends the GlobalController and uses TaskDAO for data access operations.
  */
 class TaskController extends GlobalController {
-    constructor() {;
+    constructor() {
         super(TaskDAO);
     }
 
@@ -29,21 +29,21 @@ class TaskController extends GlobalController {
         try {
             const { title, date, time, status } = req.body;
 
-            // Validar campos obligatorios
+            // Validate required fields
             if (!title || !date || !time || !status) {
-                return res.status(400).json({ message: "Completa este campo" });
+                return res.status(400).json({ message: "Unfilled fields" });
             }
 
-            // Asociar la tarea con el usuario (userId)
-            const userId = req.userId; // Esto debe venir del middleware de autenticación
+            // Associate the task with the authenticated user
+            const userId = req.userId;
             const taskData = { ...req.body, userId };
 
-            // Crear la tarea
+            // Create the task
             const task = await TaskDAO.create(taskData);
             res.status(201).json({ id: task._id });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "No pudimos guardar tu tarea, inténtalo de nuevo" });
+            res.status(500).json({ message: "We couldn't save your task, please try again." });
         }
     }
 
@@ -59,12 +59,12 @@ class TaskController extends GlobalController {
 
     async getAll(req, res) {
         try {
-            const userId = req.userId; // Esto debe venir del middleware de autenticación
+            const userId = req.userId;
             const tasks = await TaskDAO.getAll({ userId });
             res.status(200).json(tasks);
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "No pudimos obtener tus tareas, inténtalo de nuevo" });
+            res.status(500).json({ message: "We couldn't get your assignments, please try again" });
         }
     }
     
@@ -89,22 +89,23 @@ class TaskController extends GlobalController {
         try {
             const { id } = req.params;
             const { title, date, time, status } = req.body;
-            const userId = req.userId; // Esto debe venir del middleware de autenticación
+            const userId = req.userId; 
 
-            // Validar campos obligatorios
+            // Validate required fields
             if (!title || !date || !time || !status) {
-                return res.status(400).json({ message: "Completa este campo" });
+                return res.status(400).json({ message: "Unfilled files" });
             }
-            // Verificar que la tarea pertenece al usuario
+
             const task = await TaskDAO.getById(id);
             if (!task || task.userId.toString() !== userId) {
-                return res.status(404).json({ message: "Tarea no encontrada" });
+                return res.status(404).json({ message: "Task not found" });
             }
-            // Actualizar la tarea
+
             await TaskDAO.update(id, { title, date, time, status });
-            res.status(200).json({ message: "Tarea actualizada correctamente" });
+            res.status(200).json({ message: "Task updated successfully" });
         } catch (error) {
             console.error(error);
+            res.status(500).json({ message: "We couldn't update your task, please try again" });
         }
     }
 
@@ -123,18 +124,18 @@ class TaskController extends GlobalController {
     async delete(req, res) {
         try {
             const { id } = req.params;
-            const userId = req.userId; // Esto debe venir del middleware de autenticación   
-            // Verificar que la tarea pertenece al usuario
+            const userId = req.userId; 
+
             const task = await TaskDAO.getById(id);
             if (!task || task.userId.toString() !== userId) {
-                return res.status(404).json({ message: "Tarea no encontrada" });
+                return res.status(404).json({ message: "Task not found" });
             }      
-            // Eliminar la tarea
+
             await TaskDAO.delete(id);
-            res.status(200).json({ message: "Tarea eliminada correctamente" });
+            res.status(200).json({ message: "Task deleted succesfully" });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "No pudimos eliminar tu tarea, inténtalo de nuevo" });
+            res.status(500).json({ message: "We couldn't delete your task, please try again" });
         }  
     }
 
