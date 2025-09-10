@@ -4,6 +4,7 @@ require("dotenv").config();
 const cors = require("cors");
 const routes = require("./routes/routes.js");
 const { connectDB } = require("./config/database");
+const cookieParser = require('cookie-parser'); // Import cookie-parser for parsing cookies
 
 const app = express();
 
@@ -16,6 +17,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors())
+
+//Enable cookie parsing for all requests to read cookies (like the JWT token cookie)
+app.use(cookieParser());
 
 /**
  * Initialize database connection.
