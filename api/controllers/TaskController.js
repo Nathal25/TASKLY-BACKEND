@@ -132,7 +132,7 @@ class TaskController extends GlobalController {
             }      
 
             await TaskDAO.delete(id);
-            res.status(200).json({ message: "Task deleted succesfully" });
+            res.status(200).json({ message: "Task deleted successfully" });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "We couldn't delete your task, please try again" });
