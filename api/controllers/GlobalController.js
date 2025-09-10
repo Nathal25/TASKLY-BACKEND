@@ -1,8 +1,24 @@
+/**
+ * GlobalController
+ *
+ * Handles generic CRUD operations for resources using a provided DAO (Data Access Object).
+ * Each method processes HTTP requests, interacts with the DAO, and sends responses.
+ *
+ * @class GlobalController
+ * @param {Object} dao - Data Access Object with CRUD methods
+ */
 class GlobalController {
     constructor(dao) {
         this.dao = dao;
     }
 
+     /**
+      * Creates a new resource.
+      * @async
+      * @param {Object} req - Express request object
+      * @param {Object} res - Express response object
+      * @returns {void}
+      */
     async create(req, res) {
         console.log("Creating item with data:", req.body);
         try {
@@ -13,6 +29,13 @@ class GlobalController {
         }
     }
 
+     /**
+      * Reads a resource by ID.
+      * @async
+      * @param {Object} req - Express request object
+      * @param {Object} res - Express response object
+      * @returns {void}
+      */
     async read(req, res) {
         try {
             const item = await this.dao.read(req.params.id);
@@ -22,6 +45,13 @@ class GlobalController {
         }
     }
 
+     /**
+      * Updates a resource by ID.
+      * @async
+      * @param {Object} req - Express request object
+      * @param {Object} res - Express response object
+      * @returns {void}
+      */
     async update(req, res) {
         try {
             const item = await this.dao.update(req.params.id, req.body);
@@ -31,6 +61,13 @@ class GlobalController {
         }
     }
 
+     /**
+      * Deletes a resource by ID.
+      * @async
+      * @param {Object} req - Express request object
+      * @param {Object} res - Express response object
+      * @returns {void}
+      */
     async delete(req, res) {
         try {
             const item = await this.dao.delete(req.params.id);
@@ -40,6 +77,13 @@ class GlobalController {
         }
     }
 
+     /**
+      * Retrieves all resources, optionally filtered by query parameters.
+      * @async
+      * @param {Object} req - Express request object
+      * @param {Object} res - Express response object
+      * @returns {void}
+      */
     async getAll(req, res) {
         try {
             const items = await this.dao.getAll(req.query);
