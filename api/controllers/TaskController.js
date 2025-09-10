@@ -93,7 +93,7 @@ class TaskController extends GlobalController {
 
             // Validate required fields
             if (!title || !date || !time || !status) {
-                return res.status(400).json({ message: "Unfilled files" });
+                return res.status(400).json({ message: "Unfilled fields" });
             }
 
             const task = await TaskDAO.getById(id);
