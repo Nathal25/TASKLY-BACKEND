@@ -4,6 +4,7 @@ const router = express.Router();
 const UserController = require("../controllers/UserController");
 const authenticateToken = require("../middlewares/authMiddleware");
 const loginLimiter = require("../middlewares/limiterMiddleware");
+const User = require("../models/User");
 
 /**
  * @route POST /users
@@ -36,6 +37,27 @@ router.post("/login", loginLimiter, (req, res) => UserController.login(req, res)
  * @access Public
  */
 router.post("/logout", (req, res) => UserController.logout(req, res));
+
+/**
+ * @route POST /users/forgot-password
+ * @description Send an email to recover the password.
+ * @body {string} email - The mail of the user (It has to be real, or simulated by some website).
+ * @returns 200 with a success message and an email with a recovery link containing the token.
+ * @access Public
+ */
+router.post("/forgot-password", (req, res) => UserController.forgotPassword(req, res));
+
+/**
+ * @route POST /users/reset-password
+ * @description change the password.
+ * @body {string} password - The new password of the user.
+ * @body {string} confirmPassword - The new password of the user to confirm.
+ * @body {string} token - The token that was sent via email (in the link).
+ * @body {string} email - The mail of the user that was sent via email (in the link).
+ * @returns 200 with a success message.
+ * @access Public
+ */
+router.post("/reset-password", (req, res) => UserController.resetPassword(req, res));
 router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(req, res));
 
 /**

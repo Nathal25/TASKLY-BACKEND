@@ -2,6 +2,9 @@ const GlobalController = require("./GlobalController");
 const UserDAO = require("../dao/UserDAO");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const { text } = require("express");
+const User = require("../models/User");
 
 /**
  * UserController
@@ -157,6 +160,93 @@ class UserController extends GlobalController {
       sameSite: 'strict'
     });
     res.status(200).json({ message: "Logged out successfully" });
+  }
+
+  async forgotPassword(req, res) {
+    try {
+      // Check if the email exists and take the user
+      const user = await UserDAO.readByEmail(req.body.email);
+      if(!user) {
+        return res.status(202).json({ message: "If the email is registered, you will receive a password reset email" });
+      }
+
+      // Generate a JWT token, with the structure: sing(payload (data), secret (to sign), options)
+      const token = jwt.sign(
+        {
+          userId: user._id
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h'}
+      );
+
+      // Save the token and its expiration date in the instance of the user
+      user.resetPasswordToken = token;
+      user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+
+      // Update the user with the reset token and expiration
+      await UserDAO.update(user._id, user);
+      
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      });
+
+      const resetUrl = `http://localhost:8080/api/v1/users/reset-password?token=${token}&email=${user.email}`;
+      const emailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: 'Recuperar contraseña - Taskly',
+        text: 'Haz click en el siguiente enlace para restablecer tu contraseña: ' + resetUrl,
+      };
+      
+      await transporter.sendMail(emailOptions, (error, info) => {
+        if (error) {
+          console.error("Error al enviar correo:", error);
+        } else {
+          console.log("Correo enviado exitosamente:", info);
+        }
+      });
+
+      res.status(200).json({ message: "Password reset email sent" });
+
+    }catch (error) {
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const user = await UserDAO.readByResetToken(req.body.email, req.body.token);
+
+      if(!user) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      // Validate password and confirmPassword match
+      const passwordError = this.passwordValidation(req);
+      if (passwordError) {
+        return res.status(400).json({ message: passwordError });
+      }
+
+      await this.hashPassword(req);
+      user.password = req.body.password;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+
+      await UserDAO.update(user._id, user);
+
+      res.status(200).json({ message: "Password has been reset successfully" });
+
+    }catch (error) {
+      // Show detailed error only in development
+      if (process.env.NODE_ENV === "development") {
+        console.error(error);
+      }
+      res.status(500).json({ message: "Try again later" });
+    }
   }
 }
 
