@@ -3,8 +3,6 @@ const UserDAO = require("../dao/UserDAO");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const { text } = require("express");
-const User = require("../models/User");
 
 /**
  * UserController
