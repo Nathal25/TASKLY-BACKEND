@@ -31,6 +31,20 @@ class UserDAO extends GlobalDAO {
             throw new Error(`Error getting document by Email: ${error.message}`);
         }
     }
+
+    // Finds a user document by the email, the reset token, and validate if the token is not expired 
+    async readByResetToken(email, token,) {
+        try {
+            const document = await User.findOne({
+                email: email, 
+                resetPasswordToken: token,
+                resetPasswordExpires: { $gt: Date.now() } // Check if token is not expired ($gt funcion of mongodb)
+            });
+            return document;
+        }catch (error) {
+            throw new Error(`Error getting document: ${error.message}`);
+        }
+    }
 }
 
 // Export an instance of the UserDAO
