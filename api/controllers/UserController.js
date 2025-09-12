@@ -151,7 +151,16 @@ class UserController extends GlobalController {
     }
   }
 
-  // Logout method to clear the JWT token cookie
+  /**
+   * Logout method to clear the JWT token cookie.
+   * Clears the authentication cookie (`token`) using the same options
+   * as when it was created, effectively logging out the user.
+   * 
+   * @function logout
+   * @param {import("express").Request} req - Express request object.
+   * @param {import("express").Response} res - Express response object.
+   * @returns {void} Sends a 200 response with a success message.
+   */
   logout(req, res) {
     // Clear the token cookie with the same options used to create it
     res.clearCookie('token', {
@@ -162,6 +171,21 @@ class UserController extends GlobalController {
     res.status(200).json({ message: "Logged out successfully" });
   }
 
+  /**
+  * Sends a password reset email to the user.
+  *
+  * - Verifies if the provided email exists.
+  * - Generates a JWT reset token valid for 1 hour.
+  * - Stores the token and expiration date in the user record.
+  * - Sends an email with the reset link to the user.
+  *
+  * @async
+  * @function forgotPassword
+  * @param {import("express").Request} req - Express request object. Expects `req.body.email`.
+  * @param {import("express").Response} res - Express response object.
+  * @returns {Promise<void>} Sends a 200 response if the email is sent,
+  * 202 if the email does not exist, or 500 on server error.
+  */
   async forgotPassword(req, res) {
     try {
       // Check if the email exists and take the user
@@ -185,7 +209,9 @@ class UserController extends GlobalController {
 
       // Update the user with the reset token and expiration
       await UserDAO.update(user._id, user);
-      
+
+      // A transporter object is created with the Nodemailer configuration.
+      // The email service (Gmail in this case) and credentials are defined.
       const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -194,14 +220,36 @@ class UserController extends GlobalController {
         }
       });
 
+      // The URL is constructed, the user must open to reset their password. 
+      // The user's token and email are included as query parameters.
       const resetUrl = `http://localhost:8080/api/v1/users/reset-password?token=${token}&email=${user.email}`;
+
+      // Email options to send
+      // Include sender, recipient, subject, and message body
       const emailOptions = {
         from: process.env.EMAIL_USER,
         to: user.email,
         subject: 'Recuperar contraseña - Taskly',
-        text: 'Haz click en el siguiente enlace para restablecer tu contraseña: ' + resetUrl,
+        html: `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <p>Hemos recibido una solicitud para restablecer tu contraseña en <strong>Taskly</strong>.</p>
+          <p>Haz clic en el siguiente botón para continuar:</p>
+          <p>
+            <a href="${resetUrl}" 
+            style="display: inline-block; padding: 10px 20px; background: #007BFF; 
+                  color: #fff; text-decoration: none; border-radius: 5px;">
+            Restablecer contraseña
+            </a>
+          </p>
+          <p>Si no solicitaste este cambio, simplemente ignora este correo.</p>
+          <hr/>
+          <small>Este enlace expirará en 1 hora por razones de seguridad.</small>
+        </div>
+        `
       };
       
+      // The email is sent with the defined options
+      // sendMail receives a callback for the success or mistake of the sending
       await transporter.sendMail(emailOptions, (error, info) => {
         if (error) {
           console.error("Error al enviar correo:", error);
@@ -217,10 +265,26 @@ class UserController extends GlobalController {
     }
   }
 
+  /**
+   * Resets the user's password using the reset token.
+  *
+  * - Validates the token and email combination.
+  * - Ensures password and confirmPassword match.
+  * - Hashes and updates the new password in the database.
+  * - Clears the reset token and expiration fields.
+  *
+  * @async
+  * @function resetPassword
+  * @param {import("express").Request} req - Express request object. 
+  * Expects `req.body.email`, `req.body.token`, `req.body.password`, and `req.body.confirmPassword`.
+  * @param {import("express").Response} res - Express response object.
+  * @returns {Promise<void>} Sends a 200 response if reset is successful,
+  * 400 if the token is invalid/expired, or 500 on server error.
+  */
   async resetPassword(req, res) {
     try {
+      // Find the user with the reset token and the email
       const user = await UserDAO.readByResetToken(req.body.email, req.body.token);
-
       if(!user) {
         return res.status(400).json({ message: "Invalid or expired token" });
       }
@@ -231,11 +295,15 @@ class UserController extends GlobalController {
         return res.status(400).json({ message: passwordError });
       }
 
+      // Hash the new password before saving it
       await this.hashPassword(req);
       user.password = req.body.password;
+
+      // Delete the token and expiration date
       user.resetPasswordToken = null;
       user.resetPasswordExpires = null;
 
+      // Update the user in the database
       await UserDAO.update(user._id, user);
 
       res.status(200).json({ message: "Password has been reset successfully" });
