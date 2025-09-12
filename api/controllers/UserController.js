@@ -220,7 +220,8 @@ class UserController extends GlobalController {
 
       // The URL is constructed, the user must open to reset their password. 
       // The user's token and email are included as query parameters.
-      const resetUrl = `http://localhost:8080/api/v1/users/reset-password?token=${token}&email=${user.email}`;
+      const baseUrl = process.env.BASE_URL || "http://localhost:8080";
+      const resetUrl = `${baseUrl}/api/v1/users/reset-password?token=${token}&email=${user.email}`;
 
       // Email options to send
       // Include sender, recipient, subject, and message body
