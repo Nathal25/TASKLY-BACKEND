@@ -248,13 +248,8 @@ class UserController extends GlobalController {
       
       // The email is sent with the defined options
       // sendMail receives a callback for the success or mistake of the sending
-      await transporter.sendMail(emailOptions, (error, info) => {
-        if (error) {
-          console.error("Error al enviar correo:", error);
-        } else {
-          console.log("Correo enviado exitosamente:", info);
-        }
-      });
+      const info = await transporter.sendMail(emailOptions);
+      console.log("Correo enviado exitosamente:", info);
 
       res.status(200).json({ message: "Password reset email sent" });
 
