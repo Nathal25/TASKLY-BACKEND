@@ -16,7 +16,7 @@ const app = express();
  */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(cors())1
+//app.use(cors())
 app.use(cors({
   origin: "https://tasklyfront-eight.vercel.app",  // el dominio de tu frontend
   credentials: true                 // permite enviar cookies/headers auth
