@@ -7,7 +7,7 @@ const { connectDB } = require("./config/database");
 const cookieParser = require('cookie-parser'); // Import cookie-parser for parsing cookies
 
 const app = express();
-
+const baseUrl = process.env.BASE_URL;
 /**
  * Middleware configuration
  * - Parse JSON request bodies
@@ -18,8 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //app.use(cors())
 app.use(cors({
-  origin: "https://tasklyfront-eight.vercel.app",  // el dominio de tu frontend
-  credentials: true                 // permite enviar cookies/headers auth
+  origin: `${baseUrl}`,  // el dominio de tu frontend
+  credentials: true   // permite enviar cookies/headers auth
 }));
 
 //Enable cookie parsing for all requests to read cookies (like the JWT token cookie)
