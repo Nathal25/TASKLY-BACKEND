@@ -16,7 +16,11 @@ const app = express();
  */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors())
+//app.use(cors())
+app.use(cors({
+  origin: "https://tasklyfront-eight.vercel.app",  // el dominio de tu frontend
+  credentials: true                 // permite enviar cookies/headers auth
+}));
 
 //Enable cookie parsing for all requests to read cookies (like the JWT token cookie)
 app.use(cookieParser());

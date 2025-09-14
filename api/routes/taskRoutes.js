@@ -3,6 +3,7 @@ const router = express.Router();
 const TaskController = require('../controllers/TaskController');
 const authenticateToken = require('../middlewares/authMiddleware');
 
+
 /**
  * @route GET /tasks
  * @description Get all tasks for the authenticated user.

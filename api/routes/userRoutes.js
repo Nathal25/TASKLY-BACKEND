@@ -59,14 +59,14 @@ router.post("/forgot-password", (req, res) => UserController.forgotPassword(req,
  */
 router.post("/reset-password", (req, res) => UserController.resetPassword(req, res));
 
-//router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(req, res));
+router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(req, res));
 
 /**
  * @route GET /users
  * @description Retrieve all users.
  * @access Public
  */
-//router.get("/", (req, res) => UserController.getAll(req, res));
+router.get("/", (req, res) => UserController.getAll(req, res));
 
 /**
  * @route GET /users/:id
