@@ -134,7 +134,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'strict', // To prevent CSRF attacks (Cookie sent only for same-site requests (most secure))
+          sameSite: 'none', // To prevent CSRF attacks (Cookie sent only for same-site requests (most secure))
         }
       );
 
