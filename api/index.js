@@ -7,6 +7,7 @@ const { connectDB } = require("./config/database");
 const cookieParser = require('cookie-parser'); // Import cookie-parser for parsing cookies
 
 const app = express();
+app.set("trust proxy", 1);
 const baseUrl = process.env.BASE_URL;
 /**
  * Middleware configuration
