@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //app.use(cors())
 app.use(cors({
-  origin: `${baseUrl}`,  // el dominio de tu frontend
+  origin: baseUrl,  // el dominio de tu frontend
   credentials: true   // permite enviar cookies/headers auth
 }));
 
