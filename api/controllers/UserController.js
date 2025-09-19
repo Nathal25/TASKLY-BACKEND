@@ -134,7 +134,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'none', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -165,7 +165,7 @@ class UserController extends GlobalController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',      
-      sameSite: 'none',
+      sameSite: 'None',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -309,6 +309,60 @@ class UserController extends GlobalController {
         console.error(error);
       }
       res.status(500).json({ message: "Try again later" });
+    }
+  }
+
+/**
+ * Obtiene la información del usuario autenticado.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ async getLoggedUser(req, res) {
+  try {
+    let userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const user = await UserDAO.read(userId);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
+      user.toObject ? user.toObject() : user;
+
+      return res.status(200).json(safe);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error al obtener la información del usuario" });
+    }
+  }
+  
+async editLoggedUser(req, res) {
+    try {
+      let userId = req.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+
+      const user = await UserDAO.read(userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+      const allowedFields = ["firstName", "lastName", "age", "email"];
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          user[field] = req.body[field];
+        }
+      });
+
+      await UserDAO.update(user._id, user);
+
+      return res.status(200).json({ message: "Información del usuario actualizada" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
   }
 }
