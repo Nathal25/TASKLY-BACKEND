@@ -74,7 +74,7 @@ router.get("/", (req, res) => UserController.getAll(req, res));
  * @param {string} id - The unique identifier of the user.
  * @access Public
  */
-//router.get("/:id", (req, res) => UserController.read(req, res));
+//router.get("/:id", authenticateToken, (req, res) => UserController.read(req, res));
 
 /**
  * @route PUT /users/:id
@@ -93,6 +93,28 @@ router.get("/", (req, res) => UserController.getAll(req, res));
  * @access Public
  */
 //router.delete("/:id", (req, res) => UserController.delete(req, res));
+
+/**
+ * @route GET /users/me
+ * @description Get the logged-in user's details.
+ * @returns 200 with the user's details.
+ * @access Public
+ */
+
+router.get('/me', authenticateToken, (req, res) => UserController.getLoggedUser(req, res));
+
+/**
+ * @route PUT /users/edit-me
+ * @description Edit the logged-in user's details.
+ * @body {string} [firstName] - Updated first name (optional).
+ * @body {string} [lastName] - Updated last name (optional).
+ * @body {number} [age] - Updated age (optional).
+ * @body {string} [email] - Updated email (optional).
+ * @returns 200 with the updated user's details.
+ * @access Public
+ */
+
+router.put('/edit-me', authenticateToken, (req, res) => UserController.editLoggedUser(req, res));
 
 /**
  * Export the router instance to be mounted in the main routes file.
