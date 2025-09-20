@@ -67,6 +67,8 @@ router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(re
  * @access Public
  */
 router.get("/", (req, res) => UserController.getAll(req, res));
+router.get('/me', authenticateToken, (req, res) => UserController.getLoggedUser(req, res));
+router.put('/edit-me', authenticateToken, (req, res) => UserController.editLoggedUser(req, res));
 
 /**
  * @route GET /users/:id

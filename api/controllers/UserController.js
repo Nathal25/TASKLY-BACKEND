@@ -110,13 +110,13 @@ class UserController extends GlobalController {
     try {
       // Check if the email exists and take the user
       const user = await UserDAO.readByEmail(req.body.email);
-      if(!user) {
+      if (!user) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
       // Compare the provided password with the stored hashed password
       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-      if(!passwordMatch) {
+      if (!passwordMatch) {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
@@ -126,7 +126,7 @@ class UserController extends GlobalController {
           userId: user._id
         },
         process.env.JWT_SECRET,
-        { expiresIn: '2h'}
+        { expiresIn: '2h' }
       );
 
       // Send the token in a HTTP-only cookie
@@ -134,13 +134,13 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'none', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
 
       // Successful login
-      res.status(200).json({ message: "Login successful", id: user._id , email: user.email});
+      res.status(200).json({ message: "Login successful", id: user._id, email: user.email });
     } catch (error) {
       // Show detailed error only in development
       if (process.env.NODE_ENV === "development") {
@@ -164,8 +164,8 @@ class UserController extends GlobalController {
     // Clear the token cookie with the same options used to create it
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',      
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -189,7 +189,7 @@ class UserController extends GlobalController {
     try {
       // Check if the email exists and take the user
       const user = await UserDAO.readByEmail(req.body.email);
-      if(!user) {
+      if (!user) {
         return res.status(202).json({ message: "If the email is registered, you will receive a password reset email" });
       }
 
@@ -199,7 +199,7 @@ class UserController extends GlobalController {
           userId: user._id
         },
         process.env.JWT_SECRET,
-        { expiresIn: '1h'}
+        { expiresIn: '1h' }
       );
 
       // Save the token and its expiration date in the instance of the user
@@ -247,7 +247,7 @@ class UserController extends GlobalController {
         </div>
         `
       };
-      
+
       // The email is sent with the defined options
       // sendMail receives a callback for the success or mistake of the sending
       const info = await transporter.sendMail(emailOptions);
@@ -255,7 +255,7 @@ class UserController extends GlobalController {
 
       res.status(200).json({ message: "Password reset email sent" });
 
-    }catch (error) {
+    } catch (error) {
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -280,7 +280,7 @@ class UserController extends GlobalController {
     try {
       // Find the user with the reset token and the email
       const user = await UserDAO.readByResetToken(req.body.email, req.body.token);
-      if(!user) {
+      if (!user) {
         return res.status(400).json({ message: "Invalid or expired token" });
       }
 
@@ -303,7 +303,7 @@ class UserController extends GlobalController {
 
       res.status(200).json({ message: "Password has been reset successfully" });
 
-    }catch (error) {
+    } catch (error) {
       // Show detailed error only in development
       if (process.env.NODE_ENV === "development") {
         console.error(error);
@@ -311,7 +311,74 @@ class UserController extends GlobalController {
       res.status(500).json({ message: "Try again later" });
     }
   }
+
+  async getLoggedUser(req, res) {
+    try {
+      const token = req.cookies?.token;
+
+      if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+
+      const userId = decoded.userId || decoded.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid token payload" });
+      }
+
+      // Busca al usuario en la base de datos
+      const user = await UserDAO.read(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      // Excluye campos sensibles antes de devolver la respuesta
+      const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
+        user.toObject ? user.toObject() : user;
+
+      return res.status(200).json(safe);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error al obtener la información del usuario" });
+    }
+  }
+
+  async editLoggedUser(req, res) {
+    try {
+      let userId = req.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+
+      const user = await UserDAO.read(userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+      const allowedFields = ["firstName", "lastName", "age", "email"];
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          user[field] = req.body[field];
+        }
+      });
+
+      await UserDAO.update(user._id, user);
+
+      return res.status(200).json({ message: "Información del usuario actualizada" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error al obtener la información del usuario" });
+    }
+  }
 }
+
 
 // Export an instance of the UserController
 module.exports = new UserController();
