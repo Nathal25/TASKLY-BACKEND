@@ -134,7 +134,11 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
+<<<<<<< HEAD
           sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+=======
+          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+>>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -164,8 +168,13 @@ class UserController extends GlobalController {
     // Clear the token cookie with the same options used to create it
     res.clearCookie('token', {
       httpOnly: true,
+<<<<<<< HEAD
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+=======
+      secure: process.env.NODE_ENV === 'production',      
+      sameSite: 'None',
+>>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -312,36 +321,24 @@ class UserController extends GlobalController {
     }
   }
 
-  async getLoggedUser(req, res) {
-    try {
-      const token = req.cookies?.token;
+/**
+ * Obtiene la información del usuario autenticado.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+ async getLoggedUser(req, res) {
+  try {
+    let userId = req.userId;
 
-      if (!token) {
-        return res.status(401).json({ message: "No token provided" });
-      }
+    if (!userId) {
+      return res.status(401).json({ message: "No token provided" });
+    }
 
-      let decoded;
-      try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
-      } catch (error) {
-        return res.status(401).json({ message: "Invalid or expired token" });
-      }
+    const user = await UserDAO.read(userId);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-      const userId = decoded.userId || decoded.id;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token payload" });
-      }
-
-      // Busca al usuario en la base de datos
-      const user = await UserDAO.read(userId);
-      if (!user) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-
-      // Excluye campos sensibles antes de devolver la respuesta
-      const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
-        user.toObject ? user.toObject() : user;
+    const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
+      user.toObject ? user.toObject() : user;
 
       return res.status(200).json(safe);
     } catch (error) {
@@ -349,8 +346,13 @@ class UserController extends GlobalController {
       return res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
   }
+<<<<<<< HEAD
 
   async editLoggedUser(req, res) {
+=======
+  
+async editLoggedUser(req, res) {
+>>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
     try {
       let userId = req.userId;
 

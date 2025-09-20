@@ -17,10 +17,9 @@ const baseUrl = process.env.BASE_URL;
  */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(cors())
 app.use(cors({
-  origin: baseUrl,  // el dominio de tu frontend
-  credentials: true   // permite enviar cookies/headers auth
+    origin: [baseUrl, 'https://tasklyfront-eight.vercel.app'], // Permitir localhost y el dominio de producción
+    credentials: true // Permitir el envío de cookies
 }));
 
 //Enable cookie parsing for all requests to read cookies (like the JWT token cookie)
@@ -55,4 +54,3 @@ if (require.main === module) {
         console.log(`Server running on http://localhost:${PORT}`);
     });
 }
-

@@ -34,7 +34,7 @@ router.post('/', authenticateToken, (req, res) => TaskController.create(req, res
  * @param {string} id - The ID of the task to update.
  * @access Public
  */
-router.put('/:id', authenticateToken, (req, res) => TaskController.update(req, res));
+router.put('/:id', authenticateToken, (req, res) => TaskController.update2(req, res));
 
 /**
  * @route DELETE /tasks/:id
@@ -42,6 +42,6 @@ router.put('/:id', authenticateToken, (req, res) => TaskController.update(req, r
  * @param {string} id - The ID of the task to delete.
  * @access Public
  */
-router.delete('/:id', authenticateToken, (req, res) => TaskController.delete(req, res));
+router.delete('/:id', authenticateToken, (req, res) => TaskController.delete2(req, res));
 
 module.exports = router;
