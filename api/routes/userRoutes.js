@@ -67,6 +67,11 @@ router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(re
  * @access Public
  */
 router.get("/", (req, res) => UserController.getAll(req, res));
+router.get('/me', authenticateToken, (req, res) => UserController.getLoggedUser(req, res));
+router.put('/edit-me', authenticateToken, (req, res) => UserController.editLoggedUser(req, res));
+router.get("/check-token", authenticateToken, (req, res) => {
+    res.status(200).json({ message: "Token valido" });
+});
 
 /**
  * @route GET /users/:id
