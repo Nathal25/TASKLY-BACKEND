@@ -14,7 +14,7 @@ const loginLimiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
     max: 5, // Limit each IP to 5 requests per windowMs (per 10 minutes) 
     message: {
-        message: "Too many requests, please try again after 10 minutes"
+        message: "Demasiadas solicitudes, inténtelo de nuevo después de 10 minutos."
     },
 
     /**

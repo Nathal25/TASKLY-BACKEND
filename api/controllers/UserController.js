@@ -40,7 +40,7 @@ class UserController extends GlobalController {
       // Check if the email already exists
       const existingUser = await UserDAO.readByEmail(req.body.email);
       if (existingUser) {
-        return res.status(409).json({ message: "Email already in use" });
+        return res.status(409).json({ message: "Correo electrónico ya en uso" });
       }
 
       await this.hashPassword(req);
@@ -68,7 +68,7 @@ class UserController extends GlobalController {
    */
   passwordValidation(req) {
     if (req.body.password != req.body.confirmPassword) {
-      return "Password and confirm password don't match";
+      return "La contraseña y la confirmación de contraseña no coinciden";
     }
 
     // Remove confirmPassword before saving
@@ -77,7 +77,7 @@ class UserController extends GlobalController {
     // Validate the password syntaxis
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/
     if (!passwordRegex.test(req.body.password)) {
-      return "Password invalid"
+      return "La contraseña no es válida";
     }
 
     return null;
@@ -111,13 +111,13 @@ class UserController extends GlobalController {
       // Check if the email exists and take the user
       const user = await UserDAO.readByEmail(req.body.email);
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Correo electrónico o contraseña inválidos" });
       }
 
       // Compare the provided password with the stored hashed password
       const passwordMatch = await bcrypt.compare(req.body.password, user.password);
       if (!passwordMatch) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Correo electrónico o contraseña inválidos" });
       }
 
       // Generate a JWT token, with the structure: sing(payload (data), secret (to sign), options)
@@ -134,11 +134,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-<<<<<<< HEAD
-          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
-=======
-          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
->>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
+          sameSite: 'none', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -168,13 +164,8 @@ class UserController extends GlobalController {
     // Clear the token cookie with the same options used to create it
     res.clearCookie('token', {
       httpOnly: true,
-<<<<<<< HEAD
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-=======
       secure: process.env.NODE_ENV === 'production',      
-      sameSite: 'None',
->>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
+      sameSite: 'none',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -290,7 +281,7 @@ class UserController extends GlobalController {
       // Find the user with the reset token and the email
       const user = await UserDAO.readByResetToken(req.body.email, req.body.token);
       if (!user) {
-        return res.status(400).json({ message: "Invalid or expired token" });
+        return res.status(400).json({ message: "Token inválido o expirado" });
       }
 
       // Validate password and confirmPassword match
@@ -317,7 +308,7 @@ class UserController extends GlobalController {
       if (process.env.NODE_ENV === "development") {
         console.error(error);
       }
-      res.status(500).json({ message: "Try again later" });
+      res.status(500).json({ message: "Inténtalo de nuevo más tarde" });
     }
   }
 
@@ -331,7 +322,7 @@ class UserController extends GlobalController {
     let userId = req.userId;
 
     if (!userId) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({ message: "No se proporcionó un token" });
     }
 
     const user = await UserDAO.read(userId);
@@ -346,13 +337,8 @@ class UserController extends GlobalController {
       return res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
   }
-<<<<<<< HEAD
-
-  async editLoggedUser(req, res) {
-=======
   
 async editLoggedUser(req, res) {
->>>>>>> 18f69a0ff5750b91c2a2bc31f286e4e82bda4eed
     try {
       let userId = req.userId;
 

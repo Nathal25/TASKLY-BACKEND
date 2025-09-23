@@ -31,7 +31,7 @@ class TaskController extends GlobalController {
 
             // Validate required fields
             if (!title || !date || !time || !status) {
-                return res.status(400).json({ message: "Unfilled fields" });
+                return res.status(400).json({ message: "Campos sin rellenar" });
             }
 
             // Associate the task with the authenticated user
@@ -93,19 +93,19 @@ class TaskController extends GlobalController {
 
             // Validate required fields
             if (!title || !date || !time || !status) {
-                return res.status(400).json({ message: "Unfilled fields" });
+                return res.status(400).json({ message: "Campos sin rellenar" });
             }
 
             const task = await TaskDAO.getById(id);
             if (!task || task.userId.toString() !== userId) {
-                return res.status(404).json({ message: "Task not found" });
+                return res.status(404).json({ message: "Tarea no encontrada" });
             }
 
             await TaskDAO.update(id, { title, date, time, status });
-            res.status(200).json({ message: "Task updated successfully" });
+            res.status(200).json({ message: "Tarea actualizada exitosamente" });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "We couldn't update your task, please try again" });
+            res.status(500).json({ message: "No se pudo actualizar la tarea, inténtelo nuevamente" });
         }
     }
 
@@ -148,14 +148,14 @@ class TaskController extends GlobalController {
 
             const task = await TaskDAO.getById(id);
             if (!task || task.userId.toString() !== userId) {
-                return res.status(404).json({ message: "Task not found" });
+                return res.status(404).json({ message: "Tarea no encontrada" });
             }      
 
             await TaskDAO.delete(id);
-            res.status(200).json({ message: "Task deleted successfully" });
+            res.status(200).json({ message: "Tarea eliminada exitosamente" });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "We couldn't delete your task, please try again" });
+            res.status(500).json({ message: "No se pudo eliminar la tarea, inténtelo nuevamente" });
         }  
     }
 
