@@ -67,7 +67,7 @@ class TaskController extends GlobalController {
             res.status(500).json({ message: "We couldn't get your assignments, please try again" });
         }
     }
-    
+
     /**
      * Updates an existing task associated with the authenticated user.
      * 
@@ -89,7 +89,7 @@ class TaskController extends GlobalController {
         try {
             const { id } = req.params;
             const { title, date, time, status } = req.body;
-            const userId = req.userId; 
+            const userId = req.userId;
 
             // Validate required fields
             if (!title || !date || !time || !status) {
@@ -110,24 +110,24 @@ class TaskController extends GlobalController {
     }
 
     async update2(req, res) {
-  try {
-    const taskId = req.params.id;
-    const updates = req.body;
+        try {
+            const taskId = req.params.id;
+            const updates = req.body;
 
-    // Validar que la tarea existe
-    const task = await TaskDAO.read(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Tarea no encontrada" });
+            // Validar que la tarea existe
+            const task = await TaskDAO.read(taskId);
+            if (!task) {
+                return res.status(404).json({ message: "Tarea no encontrada" });
+            }
+
+            // Actualizar la tarea
+            const updatedTask = await TaskDAO.update(taskId, updates);
+            res.status(200).json({ message: "Tarea actualizada exitosamente", task: updatedTask });
+        } catch (error) {
+            console.error('Error al actualizar la tarea:', error);
+            res.status(500).json({ message: "No se pudo actualizar la tarea, inténtelo nuevamente" });
+        }
     }
-
-    // Actualizar la tarea
-    const updatedTask = await TaskDAO.update(taskId, updates);
-    res.status(200).json({ message: "Tarea actualizada exitosamente", task: updatedTask });
-  } catch (error) {
-    console.error('Error al actualizar la tarea:', error);
-    res.status(500).json({ message: "No se pudo actualizar la tarea, inténtelo nuevamente" });
-  }
-}
 
     /**
      * Deletes an existing task associated with the authenticated user.
@@ -144,40 +144,40 @@ class TaskController extends GlobalController {
     async delete(req, res) {
         try {
             const { id } = req.params;
-            const userId = req.userId; 
+            const userId = req.userId;
 
             const task = await TaskDAO.getById(id);
             if (!task || task.userId.toString() !== userId) {
                 return res.status(404).json({ message: "Tarea no encontrada" });
-            }      
+            }
 
             await TaskDAO.delete(id);
             res.status(200).json({ message: "Tarea eliminada exitosamente" });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "No se pudo eliminar la tarea, inténtelo nuevamente" });
-        }  
+        }
     }
 
 
     async delete2(req, res) {
-  try {
-    const taskId = req.params.id;
+        try {
+            const taskId = req.params.id;
 
-    // Validar que la tarea existe
-    const task = await TaskDAO.read(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "Tarea no encontrada" });
+            // Validar que la tarea existe
+            const task = await TaskDAO.read(taskId);
+            if (!task) {
+                return res.status(404).json({ message: "Tarea no encontrada" });
+            }
+
+            // Eliminar la tarea
+            await TaskDAO.delete(taskId);
+            res.status(200).json({ message: "Tarea eliminada exitosamente" });
+        } catch (error) {
+            console.error('Error al eliminar la tarea:', error);
+            res.status(500).json({ message: "No se pudo eliminar la tarea, inténtelo nuevamente" });
+        }
     }
-
-    // Eliminar la tarea
-    await TaskDAO.delete(taskId);
-    res.status(200).json({ message: "Tarea eliminada exitosamente" });
-  } catch (error) {
-    console.error('Error al eliminar la tarea:', error);
-    res.status(500).json({ message: "No se pudo eliminar la tarea, inténtelo nuevamente" });
-  }
-}
 }
 
 module.exports = new TaskController();

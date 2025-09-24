@@ -30,6 +30,29 @@ class TaskDAO extends GlobalDAO {
             throw new Error(`Error retrieving documents: ${error.message}`);
         }
     }
+
+    /**
+    * Deletes all documents associated with a given user ID.
+    *
+    * @async
+    * @function deleteByUserId
+    * @memberof TaskDAO
+    * @description Uses the underlying database model to remove all tasks
+    * that belong to the specified user.
+    *
+    * @param {string|import('mongoose').Types.ObjectId} userId - The ID of the user whose tasks should be deleted.
+    * @returns {Promise<import('mongoose').DeleteResult>} A promise that resolves with the deletion result,
+    * including the number of documents deleted.
+    *
+    * @throws {Error} Throws an error if the deletion operation fails.
+    */
+    async deleteByUserId(userId) {
+        try {
+            return await this.model.deleteMany({ userId: userId });
+        } catch (error) {
+            throw new Error(`Error deleting documents: ${error.message}`);
+        }
+    }
 }
 
 /**
