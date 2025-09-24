@@ -135,7 +135,8 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -166,7 +167,7 @@ class UserController extends GlobalController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'None',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -326,8 +327,8 @@ class UserController extends GlobalController {
         return res.status(401).json({ message: "No se proporcionó un token" });
       }
 
-      const user = await UserDAO.read(userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    const user = await UserDAO.read(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
       const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
         user.toObject ? user.toObject() : user;
@@ -335,10 +336,17 @@ class UserController extends GlobalController {
       return res.status(200).json(safe);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Error al obtener la información del usuario" });
+      return res.status(500).json({ message: "Error getting user information" });
     }
   }
 
+  /** Edits the information of the currently authenticated user.
+   * Allows updating fields like firstName, lastName, age, and email.
+   * Requires a valid JWT token for authentication.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @returns {Promise<void>} Sends a response indicating success or an error message.
+   */
   async editLoggedUser(req, res) {
     try {
       let userId = req.userId;
@@ -348,7 +356,7 @@ class UserController extends GlobalController {
       }
 
       const user = await UserDAO.read(userId);
-      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+      if (!user) return res.status(404).json({ message: "User not found" });
 
       const allowedFields = ["firstName", "lastName", "age", "email"];
       allowedFields.forEach(field => {
@@ -359,11 +367,11 @@ class UserController extends GlobalController {
 
       await UserDAO.update(user._id, user);
 
-      return res.status(200).json({ message: "Información del usuario actualizada" });
+      return res.status(200).json({ message: "User information updated successfully" });
 
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Error al obtener la información del usuario" });
+      return res.status(500).json({ message: "Error getting user information" });
     }
   }
 
@@ -411,7 +419,7 @@ class UserController extends GlobalController {
       res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'None',
       });
 
       return res.status(200).json({ message: "Usuario eliminado" });
@@ -422,9 +430,6 @@ class UserController extends GlobalController {
     }
   }
 }
-
-
-
 
 // Export an instance of the UserController
 module.exports = new UserController();

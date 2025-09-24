@@ -53,7 +53,26 @@ class TaskDAO extends GlobalDAO {
             throw new Error(`Error deleting documents: ${error.message}`);
         }
     }
+    
+    /**
+     * Updates a Task document by its ID with the provided updates.
+     * 
+     * @param {string} taskId - The ID of the Task document to update.
+     * @param {Object} updates - An object containing the fields to update and their new values.
+     * @returns {Promise<Object|null>} - A promise that resolves to the updated Task document, or null if not found.
+     * @throws {Error} - Throws an error if there is an issue during the update operation.
+     * */
+    async update(taskId, updates){
+         try {
+    const updatedTask = await Task.findByIdAndUpdate(taskId, updates, { new: true });
+    return updatedTask;
+  } catch (error) {
+    console.error('Error al actualizar la tarea:', error.message);
+    throw error;
+  }
+    }
 }
+
 
 /**
  * Exports an instance of the TaskDAO class for use in other parts of the application.

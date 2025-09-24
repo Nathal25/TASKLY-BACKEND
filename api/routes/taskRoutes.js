@@ -44,4 +44,13 @@ router.put('/:id', authenticateToken, (req, res) => TaskController.update2(req, 
  */
 router.delete('/:id', authenticateToken, (req, res) => TaskController.delete2(req, res));
 
+
+/**
+ * @route PUT /tasks/:id/status
+ * @description Update the status of a task by its ID for the authenticated user.
+ * @param {string} id - The ID of the task to update the status.
+ * @access Public
+ */
+router.put('/:id/status', authenticateToken, (req, res) => TaskController.updateTaskStatus(req, res));
+
 module.exports = router;
