@@ -3,6 +3,7 @@ const UserDAO = require("../dao/UserDAO");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const TaskDAO = require("../dao/TaskDAO");
 
 /**
  * UserController
@@ -134,7 +135,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'none', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -164,8 +165,8 @@ class UserController extends GlobalController {
     // Clear the token cookie with the same options used to create it
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',      
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -312,24 +313,24 @@ class UserController extends GlobalController {
     }
   }
 
-/**
- * Obtiene la información del usuario autenticado.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- */
- async getLoggedUser(req, res) {
-  try {
-    let userId = req.userId;
+  /**
+   * Obtiene la información del usuario autenticado.
+   * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   */
+  async getLoggedUser(req, res) {
+    try {
+      let userId = req.userId;
 
-    if (!userId) {
-      return res.status(401).json({ message: "No se proporcionó un token" });
-    }
+      if (!userId) {
+        return res.status(401).json({ message: "No se proporcionó un token" });
+      }
 
-    const user = await UserDAO.read(userId);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+      const user = await UserDAO.read(userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
-      user.toObject ? user.toObject() : user;
+      const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
+        user.toObject ? user.toObject() : user;
 
       return res.status(200).json(safe);
     } catch (error) {
@@ -337,8 +338,8 @@ class UserController extends GlobalController {
       return res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
   }
-  
-async editLoggedUser(req, res) {
+
+  async editLoggedUser(req, res) {
     try {
       let userId = req.userId;
 
@@ -365,7 +366,64 @@ async editLoggedUser(req, res) {
       return res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
   }
+
+  /**
+  * Deletes the currently authenticated user after verifying their password.
+  *
+  * @async
+  * @function deleteLoggedUser
+  * @memberof UserController
+  * @description
+  * - Validates the JWT token from the request to identify the user.
+  * - Verifies the provided password matches the user's stored password.
+  * - Deletes all tasks associated with the user.
+  * - Deletes the user account from the database.
+  * - Clears the authentication cookie.
+  *
+  * @param {import('express').Request} req - Express request object.
+  * @param {import('express').Response} res - Express response object.
+  *
+  * @body {string} password - The current password of the user to confirm account deletion.
+  *
+  * @returns {Promise<void>}
+  * @throws {401} If no token is provided or if the password is incorrect.
+  * @throws {404} If the user is not found.
+  * @throws {500} If an unexpected server error occurs.
+  */
+  async deleteLoggedUser(req, res) {
+    try {
+      let userId = req.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+
+      const user = await UserDAO.read(userId);
+      if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+      const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+      if (!passwordMatch) {
+        return res.status(401).json({ message: "Contraseña incorrecta" });
+      }
+
+      await TaskDAO.deleteByUserId(user._id);
+      await UserDAO.delete(user._id);
+
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+
+      return res.status(200).json({ message: "Usuario eliminado" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Error al eliminar el usuario" });
+    }
+  }
 }
+
+
 
 
 // Export an instance of the UserController

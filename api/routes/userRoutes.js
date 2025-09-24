@@ -58,8 +58,7 @@ router.post("/forgot-password", (req, res) => UserController.forgotPassword(req,
  * @access Public
  */
 router.post("/reset-password", (req, res) => UserController.resetPassword(req, res));
-
-router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(req, res));
+//router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(req, res));
 
 /**
  * @route GET /users
@@ -67,11 +66,6 @@ router.get("/Prueba1", authenticateToken, (req, res) => UserController.getAll(re
  * @access Public
  */
 router.get("/", (req, res) => UserController.getAll(req, res));
-router.get('/me', authenticateToken, (req, res) => UserController.getLoggedUser(req, res));
-router.put('/edit-me', authenticateToken, (req, res) => UserController.editLoggedUser(req, res));
-router.get("/check-token", authenticateToken, (req, res) => {
-    res.status(200).json({ message: "Token valido" });
-});
 
 /**
  * @route GET /users/:id
@@ -80,24 +74,6 @@ router.get("/check-token", authenticateToken, (req, res) => {
  * @access Public
  */
 //router.get("/:id", authenticateToken, (req, res) => UserController.read(req, res));
-
-/**
- * @route PUT /users/:id
- * @description Update an existing user by ID.
- * @param {string} id - The unique identifier of the user.
- * @body {string} [username] - Updated username (optional).
- * @body {string} [password] - Updated password (optional).
- * @access Public
- */
-//router.put("/:id", (req, res) => UserController.update(req, res));
-
-/**
- * @route DELETE /users/:id
- * @description Delete a user by ID.
- * @param {string} id - The unique identifier of the user.
- * @access Public
- */
-//router.delete("/:id", (req, res) => UserController.delete(req, res));
 
 /**
  * @route GET /users/me
@@ -120,6 +96,32 @@ router.get('/me', authenticateToken, (req, res) => UserController.getLoggedUser(
  */
 
 router.put('/edit-me', authenticateToken, (req, res) => UserController.editLoggedUser(req, res));
+
+/**
+ * @route GET /check-token
+ * @description Verifica que el token JWT enviado sea válido.
+ * @access Private (requiere autenticación con JWT)
+ * @middleware authenticateToken - Middleware que valida el token y añade los datos del usuario a `req.user`.
+ * @returns {object} 200 - Devuelve un mensaje confirmando que el token es válido.
+ */
+
+router.get("/check-token", authenticateToken, (req, res) => {
+    res.status(200).json({ message: "Token valido" });
+});
+
+/**
+ * @route DELETE /me
+ * @description Elimina la cuenta del usuario autenticado después de validar su identidad.
+ * @access Private (requiere autenticación con JWT)
+ * @middleware authenticateToken - Middleware que valida el token y añade los datos del usuario a `req.user`.
+ * @body {string} password - Contraseña actual del usuario para confirmar la eliminación de la cuenta.
+ * @returns {object} 200 - Cuenta eliminada exitosamente.
+ * @returns {object} 400 - Si faltan datos obligatorios.
+ * @returns {object} 401 - Si la contraseña es incorrecta o el token no es válido.
+ * @returns {object} 404 - Si el usuario no existe.
+ */
+
+router.delete("/me", authenticateToken, (req, res) => UserController.deleteLoggedUser(req, res));
 
 /**
  * Export the router instance to be mounted in the main routes file.
