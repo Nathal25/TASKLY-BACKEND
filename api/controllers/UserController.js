@@ -213,10 +213,15 @@ class UserController extends GlobalController {
       // A transporter object is created with the Nodemailer configuration.
       // The email service (Gmail in this case) and credentials are defined.
       const transporter = nodemailer.createTransport({
-        service: 'Gmail',
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // STARTTLS
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
+          user: process.env.EMAIL_USER, // tu correo
+          pass: process.env.EMAIL_PASS  // tu contraseña de aplicación
+        },
+        tls: {
+          rejectUnauthorized: false // evita problemas de certificados
         }
       });
 
@@ -328,8 +333,8 @@ class UserController extends GlobalController {
         return res.status(401).json({ message: "No se proporcionó un token" });
       }
 
-    const user = await UserDAO.read(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+      const user = await UserDAO.read(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
 
       const { password, resetPasswordToken, resetPasswordExpires, ...safe } =
         user.toObject ? user.toObject() : user;
