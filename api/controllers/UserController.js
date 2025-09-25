@@ -257,6 +257,8 @@ class UserController extends GlobalController {
       res.status(200).json({ message: "Password reset email sent" });
 
     } catch (error) {
+      console.error("Forgot password error:", error);
+      console.log("Error details:", error.message);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
