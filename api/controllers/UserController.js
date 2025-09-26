@@ -262,7 +262,7 @@ class UserController extends GlobalController {
       // 5) Configurar email con SendGrid
       const msg = {
         to: user.email,
-        from: process.env.EMAIL_FROM, // remitente verificado en SendGrid
+        from: process.env.EMAIL_USER, // remitente verificado en SendGrid
         subject: "Recuperar contraseña - Taskly",
         html: `
         <div style="font-family: Arial, sans-serif; color: #333;">
