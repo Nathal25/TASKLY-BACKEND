@@ -4,6 +4,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const TaskDAO = require("../dao/TaskDAO");
+const sgMail = require("@sendgrid/mail");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /**
  * UserController
@@ -135,7 +138,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'None', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -166,7 +169,7 @@ class UserController extends GlobalController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -210,6 +213,7 @@ class UserController extends GlobalController {
       // Update the user with the reset token and expiration
       await UserDAO.update(user._id, user);
 
+      /*
       // A transporter object is created with the Nodemailer configuration.
       // The email service (Gmail in this case) and credentials are defined.
       const transporter = nodemailer.createTransport({
@@ -223,13 +227,14 @@ class UserController extends GlobalController {
         tls: {
           rejectUnauthorized: false // evita problemas de certificados
         }
-      });
+      });*/
 
       // The URL is constructed, the user must open to reset their password. 
       // The user's token and email are included as query parameters.
       const baseUrl = process.env.BASE_URL || "http://localhost:8080";
       const resetUrl = `${baseUrl}/#/recover-password?token=${token}&email=${user.email}`;
 
+      /*
       // Email options to send
       // Include sender, recipient, subject, and message body
       const emailOptions = {
@@ -252,12 +257,38 @@ class UserController extends GlobalController {
           <small>Este enlace expirará en 1 hora por razones de seguridad.</small>
         </div>
         `
+      };*/
+
+      // 5) Configurar email con SendGrid
+      const msg = {
+        to: user.email,
+        from: process.env.EMAIL_FROM, // remitente verificado en SendGrid
+        subject: "Recuperar contraseña - Taskly",
+        html: `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <p>Hemos recibido una solicitud para restablecer tu contraseña en <strong>Taskly</strong>.</p>
+          <p>Haz clic en el siguiente botón para continuar:</p>
+          <p>
+            <a href="${resetUrl}" 
+            style="display: inline-block; padding: 10px 20px; background: #007BFF; 
+                  color: #fff; text-decoration: none; border-radius: 5px;">
+            Restablecer contraseña
+            </a>
+          </p>
+          <p>Si no solicitaste este cambio, simplemente ignora este correo.</p>
+          <hr/>
+          <small>Este enlace expirará en 1 hora por razones de seguridad.</small>
+        </div>
+      `,
       };
 
+      // 6) Enviar correo con SendGrid
+      await sgMail.send(msg);
+      console.log(" Correo enviado exitosamente a:", user.email);
       // The email is sent with the defined options
       // sendMail receives a callback for the success or mistake of the sending
-      const info = await transporter.sendMail(emailOptions);
-      console.log("Correo enviado exitosamente:", info);
+      //const info = await transporter.sendMail(emailOptions);
+      //console.log("Correo enviado exitosamente:", info);
 
       res.status(200).json({ message: "Password reset email sent" });
 
@@ -425,7 +456,7 @@ class UserController extends GlobalController {
       res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'None',
+        sameSite: 'lax',
       });
 
       return res.status(200).json({ message: "Usuario eliminado" });
