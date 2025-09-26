@@ -138,7 +138,7 @@ class UserController extends GlobalController {
         {
           httpOnly: true, // JavaScript cannot access this cookie for the side of the client
           secure: process.env.NODE_ENV === 'production', // Only be sent via HTTPS
-          sameSite: 'lax', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
+          sameSite: 'none', // Allows cross-origin cookies; reduces CSRF protection. Use only if cross-site requests are required.
           maxAge: 2 * 60 * 60 * 1000 // 2 hours in milliseconds
         }
       );
@@ -169,7 +169,7 @@ class UserController extends GlobalController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
     });
     res.status(200).json({ message: "Logged out successfully" });
   }
@@ -456,7 +456,7 @@ class UserController extends GlobalController {
       res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
       });
 
       return res.status(200).json({ message: "Usuario eliminado" });
