@@ -454,7 +454,7 @@ class UserController extends GlobalController {
       await UserDAO.delete(user._id);
 
       res.clearCookie('token', {
-        httpOnly: true,f
+        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
       });
