@@ -25,7 +25,8 @@ class TaskDAO extends GlobalDAO {
      */
     async getAll(filter = {}, sort = {}) {
         try {
-            return await this.model.find(filter).sort(sort);
+            //return await this.model.find(filter).sort(sort);
+            return await this.model.find(filter).sort({ createdAt: 1 });
         } catch (error) {
             throw new Error(`Error retrieving documents: ${error.message}`);
         }
